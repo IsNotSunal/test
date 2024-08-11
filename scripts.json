@@ -1,0 +1,44 @@
+{
+  "unsafe-functions": {
+    "state": true
+  },
+  "AstolfoScript-gitee.lua": {
+    "state": false
+  },
+  "AstolfoScript-github.lua": {
+    "state": false
+  },
+  "bedaura1.lua": {
+    "state": true
+  },
+  "CloudScriptLoader-src.lua": {
+    "state": false
+  },
+  "fullbulid.lua": {
+    "state": false
+  },
+  "legitscr.lua": {
+    "state": false
+  },
+  "lib.lua": {
+    "state": false
+  },
+  "meta.lua": {
+    "state": false
+  },
+  "scaff.lua": {
+    "state": true
+  },
+  "slientaura.lua": {
+    "state": true
+  },
+  "src.lua": {
+    "state": true
+  },
+  "TargetHUD.lua": {
+    "state": true
+  },
+  "test.lua": {
+    "state": false
+  }
+}

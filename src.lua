@@ -1,11 +1,11 @@
 http.load("https://gitee.com/SunalBest/ast-lib/raw/develop/lib.lua")
-http.load("https://gitee.com/SunalBest/ast-lib/raw/develop/scaff.lua")
-http.load("https://gitee.com/SunalBest/ast-lib/raw/develop/aura.lua")
+--http.load("https://gitee.com/SunalBest/ast-lib/raw/develop/scaff.lua")
+--http.load("https://gitee.com/SunalBest/ast-lib/raw/develop/aura.lua")
 
 local changelogs_type = {
-    add = "\n" .. color.gray .. "[" .. color.green .. "+" .. color.gray .. "]" .. color.white,
-    change = "\n" .. color.gray .. "[" .. color.white .. "~" .. color.gray .. "]" .. color.white,
-    del = "\n" .. color.gray .. "[" .. color.red .. "-" .. color.gray .. "]" .. color.white
+    add = "\n" .. color.gray .. "[" .. color.green .. "+" .. color.gray .. "] " .. color.white,
+    change = "\n" .. color.gray .. "[" .. color.white .. "~" .. color.gray .. "] " .. color.white,
+    del = "\n" .. color.gray .. "[" .. color.red .. "-" .. color.gray .. "] " .. color.white
 }
 
 --bulid
@@ -19,17 +19,7 @@ client.print(
 client.print(
     "------------------------------------------------\n"..
     color.gold .. "Change Logs :" ..
-    changelogs_type.add .. "Full Watchdog NoSlow"..
-    changelogs_type.add .. "Exhibition WaterMark" ..
-    changelogs_type.add .. "ETB Watermark" .. 
-    changelogs_type.add .. "Change Logs" ..
-    changelogs_type.add .. "Keep-y Scaffold" ..
-    changelogs_type.add .. "Optimize BedAura" .. 
-    changelogs_type.add .. "SlientAura (Based on xtyo's script)" ..
-    changelogs_type.add .. "Float Hop" ..
-    changelogs_type.change .. "Recode Scaffold" ..
-    changelogs_type.del .. "Del Orginal Scaffold" ..
-    changelogs_type.del .. "Script Cloud Bypassing State" 
+    changelogs_type.del .. "Slient Aura Option Make it ez to change"
 )
 
 --var register
@@ -45,6 +35,10 @@ local daair = 0
 local jumpss = 0
     --nofallss
 local started = false
+local start_nofall = false
+    --noslow
+local noslow_g_ticks = 0
+local send = false
     --arraylist
 local mainModules = {
     "BedAura",
@@ -66,7 +60,8 @@ local mainModules = {
     "AutoBlock",
     "AutoArmor",
     "AutoHeal",
-    "AutoTool"
+    "AutoTool",
+    "NoFalls",
 }
 local showModules = {}
     --blink info
@@ -122,6 +117,7 @@ local antivoid = {
         return t
     end
 }
+
     --hypixel velocity_mod
 local velocity_mod = {
     on_pre_update = function()
@@ -134,7 +130,7 @@ local velocity_mod = {
     end,
 
     on_receive_packet = function(e)
-		if module_manager.is_module_on("Velocity") and airticks <= 5 then
+		if module_manager.is_module_on("Velocity") and airticks <= module_manager.option("Velocity\194\1677 Hypixel", "Air Ticks") then
 			if e.packet_id == 0x12 and e.entity_id == player.id() then
 				e.cancel = true
 				local mx,my,mz = player.motion()
@@ -177,6 +173,14 @@ local bhop = {
                 end
             end
         end
+
+        if module_manager.option("LegitSpeed", "Strafe Hop") then
+            if jumpss > 1 then
+                if daair == 9 or daair == 10 or daair == 11 or daair == 1 or daair == 2 then
+                    player.set_speed(player.get_speed() * 0.97)
+                end
+            end
+        end
     end,
 
     on_disable = function()
@@ -184,47 +188,85 @@ local bhop = {
         jumpss = 0
     end,
 }
+
     --nofalls
 local nofalls = { 
-    on_pre_motion = function()
-        if player.kill_aura_target() == nil and not nofall.voidcheck() and not module_manager.is_module_on("Scaffold") and player.is_on_edge() and player.on_ground() and not module_manager.is_module_on("Long-Jump") and not module_manager.is_module_on("Nofall") and nofall.falldist() and not input.is_key_down(57) then
-            player.message(".nofall mode spoof")
-            global.set_module_state("Nofall", true)
-            global.set_module_state("Blink", true)
-            started = true
+    on_pre_motion = function(e)
+        if module_manager.option("NoFalls" , "Mode") == 1 then
+            if player.kill_aura_target() == nil and not nofall.voidcheck() and not module_manager.is_module_on("Scaffold") and player.is_on_edge() and player.on_ground() and not module_manager.is_module_on("Long-Jump") and not module_manager.is_module_on("Nofall") and nofall.falldist() and not input.is_key_down(57) then
+                player.message(".nofall mode spoof")
+                global.set_module_state("Nofall", true)
+                global.set_module_state("Blink", true)
+                started = true
+            end
+    
+            if started and player.on_ground() and not player.is_on_edge() then
+                global.set_module_state("Nofall", false)
+                global.set_module_state("Blink", false)
+                started = false
+            end
+        elseif module_manager.option("NoFalls" , "Mode") == 2 then
+            if player.fall_distance() > 3 then
+                start_nofall = true
+            end
+
+            if start_nofall then
+                e.on_ground = false
+
+                if player.on_ground() then
+                    if not module_manager.is_module_on("LegitSpeed") and not input.is_key_down(57) then
+                        player.jump()
+                    end
+                    start_nofall = false
+                end
+            end
         end
 
-        if started and player.on_ground() and not player.is_on_edge() then
-            global.set_module_state("Nofall", false)
-            global.set_module_state("Blink", false)
-            started = false
-        end
+        return e
+    end,
+
+    on_disable = function ()
+        start_nofall = false
     end
 }
 
     --noslow
 local noslow = {
     on_pre_motion = function(t)
-        if global.is_holding_items() then
-            global.set_module_state('noslow', true)
-            global.hide_module_state('noslow' , true)
+        if global.is_holding_gap() and player.using_item() then
+            
+        end
+        if player.on_ground() then
+            noslow_g_ticks = 0
         else
-            global.set_module_state('noslow', false)
-            global.hide_module_state('noslow' , false)
+            noslow_g_ticks = noslow_g_ticks + 1
         end
 
-        if player.using_item() and global.is_holding_gap() then
-            if player.ticks_existed() % 2 == 0 then
-                for i = 10, 45 do
-                    if not player.inventory.item_information(i - 1) then
-                        player.place_block((i - 1) % 36 + 1, -1, -1, -1, 1, -1, -1, -1)
-                        return
-                    end
+        if noslow_g_ticks == 2 and send then
+            player.send_packet_no_event(0x08)
+            send = false
+        elseif player.using_item() and global.is_holding_gap() then
+            t.y = t.y + 1e-14
+        end
+
+        return t
+    end,
+
+    on_send_packet = function (t)
+        if t.packet_id == 0x08 and not player.using_item() then
+            if global.is_holding_gap() and noslow_g_ticks < 2 then
+                if player.on_ground() then
+                    player.jump()
                 end
+                send = true
+                t.cancel = true
             end
         end
+
+        return t
     end
 }
+
     --arraylist
 local arraylist = {
     on_render_screen = function(ctx)
@@ -269,21 +311,33 @@ local arraylist = {
             --normal suffix
             if module_manager.option("Custom Arraylist", "Suffix") then
                 if module == "KillAura" then
-                    table.insert(combinedList, "KillAura\194\1677" .. suffix_type .. "Silent")
+                    table.insert(combinedList, "Aura\194\1677" .. suffix_type .. "Silent")
+
                 elseif module == "LegitSpeed" then
                     table.insert(combinedList , "Speed\194\1677" .. suffix_type .. "Hypixel")
+
                 elseif module == "Velocity" then
                     table.insert(combinedList , "Velocity\194\1677" .. suffix_type .. vel_suffix)
+
                 elseif module == "AntiVoid" then
                     table.insert(combinedList , "AntiVoid\194\1677" .. suffix_type .. "Blink")
-                elseif module == "BlinkNoFall" then
-                    table.insert(combinedList , "NoFall\194\1677" .. suffix_type .. "Blink")
+
+                elseif module == "NoFalls" then
+                    if module_manager.option("NoFalls" , "Mode") == 1 then
+                        table.insert(combinedList , "NoFall\194\1677" .. suffix_type .. "Blink")
+                    elseif module_manager.option("NoFalls" , "Mode") == 2 then
+                        table.insert(combinedList , "NoFall\194\1677" .. suffix_type .. "Jump")
+                    end
+
                 elseif module == "AutoBlock" then
                     table.insert(combinedList , "AutoBlock\194\1677" .. suffix_type .. "Watchdog")
+
                 elseif module == "NoSlow\194\1677 Watchdog" then
                     table.insert(combinedList , "NoSlow\194\1677" .. suffix_type .. "Hypixel")
+
                 elseif module == "AutoHeal" then
                     table.insert(combinedList , "AutoPot")
+
                 else
                     table.insert(combinedList, module)
                 end
@@ -342,7 +396,7 @@ local arraylist = {
                     local test = 15
                         local wy = 0
                         local wx = 0
-                        render.draw_image("https://b.catgirlsare.sexy/1P1M8BsE4Z31.png", 0, 2, 32, 32)
+                        render.draw_image("https://gitee.com/SunalBest/ast-lib/raw/develop/shit.png", 0, 2, 32, 32)
                         render.rect(1, 12 / 0.95 + test, 60 / 0.99, 68 / 0.90+ test, 0, 0, 0, 161) -- background
                         render.rect(59 / 0.99, 12 / 0.95 + test, 60 / 0.99, 68 / 0.90+ test, 0, 0, 0, 255) -- linha direita
                         render.rect(1, 12 / 0.95 + test, 2, 68 / 0.90+ test, 0, 0, 0, 255) -- linha esquerda
@@ -377,6 +431,7 @@ local arraylist = {
         end
     end
 }
+
     --info
 local info = {
     on_render_screen = function (ctx)
@@ -401,11 +456,16 @@ module_manager.register('AntiVoid' , antivoid)
 module_manager.register_number('AntiVoid', 'Distance', 1, 20, 15)
     --hypixel velocity
 module_manager.register('Velocity\194\1677 Hypixel' , velocity_mod)
+module_manager.register_number("Velocity\194\1677 Hypixel", "Air Ticks", 0, 11, 0)
     --speed
 module_manager.register('LegitSpeed' , bhop)
 module_manager.register_boolean("LegitSpeed", "Float Hop", true)
+module_manager.register_boolean("LegitSpeed", "Strafe Hop", true)
     --nofalls
-module_manager.register('BlinkNoFall', nofalls)
+module_manager.register('NoFalls', nofalls)
+module_manager.register_number("NoFalls" , "Mode" , 1 , 2 , 2)
+module_manager.register_boolean("NoFalls", "Mode-1 Blink", false)
+module_manager.register_boolean("NoFalls", "Mode-2 Jump", false)
     --noslow
 module_manager.register("NoSlow\194\1677 Watchdog" , noslow)
     --arraylist
