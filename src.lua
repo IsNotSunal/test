@@ -1,4 +1,4 @@
-http.load("https://gitee.com/SunalBest/ast-lib/raw/develop/lib.lua")
+http.load("https://raw.githubusercontent.com/IsNotSunal/test/main/lib.lua")
 http.load("https://gitee.com/SunalBest/ast-lib/raw/develop/scaff.lua")
 http.load("https://gitee.com/SunalBest/ast-lib/raw/develop/aura.lua")
 
