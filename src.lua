@@ -19,7 +19,14 @@ client.print(
 client.print(
     "------------------------------------------------\n"..
     color.gold .. "Change Logs :" ..
-    changelogs_type.del .. "Slient Aura Option Make it ez to change"
+    changelogs_type.add .. "Swap Tower(bit flag)" ..
+    changelogs_type.add .. "Strafe Hop" ..
+    changelogs_type.add .. "JumpNoFall" ..
+    changelogs_type.add .. "Rotations and Yaw-Offset Option in Scaffold" ..
+    changelogs_type.add .. "Airticks Option in hypixel velocity" ..
+    changelogs_type.add .. "Offset NoSlow" ..
+    changelogs_type.change .. "Fix Autoblock" ..
+    changelogs_type.del .. "Slient Aura Option Make it ez to change" 
 )
 
 --var register
