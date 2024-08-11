@@ -1,6 +1,6 @@
 http.load("https://gitee.com/SunalBest/ast-lib/raw/develop/lib.lua")
---http.load("https://gitee.com/SunalBest/ast-lib/raw/develop/scaff.lua")
---http.load("https://gitee.com/SunalBest/ast-lib/raw/develop/aura.lua")
+http.load("https://gitee.com/SunalBest/ast-lib/raw/develop/scaff.lua")
+http.load("https://gitee.com/SunalBest/ast-lib/raw/develop/aura.lua")
 
 local changelogs_type = {
     add = "\n" .. color.gray .. "[" .. color.green .. "+" .. color.gray .. "] " .. color.white,
